@@ -54,10 +54,10 @@ class lstm(nn.Module):
         super(lstm, self).__init__()
 
         self.rnn = nn.LSTM(
-            input_size=len(FactorCode),
-            hidden_size=64,
-            num_layers=2,
-            batch_first=True,
+            input_size=len(FactorCode),#x的特征维度
+            hidden_size=64,#隐藏层的特征维度,横向
+            num_layers=2,#隐层的层数，默认为1,纵向
+            batch_first=True, # batch指一次性输入到神经网络中的样本数
             dropout=0.2
         )
 
@@ -102,7 +102,7 @@ def filter_MAD(df, factor, n=3):
 def init(context):
     context.SVM = svm.SVC(gamma='scale')
     # 账号设置：设置初始资金为 10000000 元
-    set_backtest(initial_cash=10000000, future_cost_fee=1.0, stock_cost_fee=30, margin_rate=1.0, slide_price=0.0,
+    set_backtest(initial_cash=10000000, future_cost_fee=1.0, stock_cost_fee=30, margin_rate=1.0, slide_price=0,
                  price_loc=1, deal_type=0, limit_type=0)
     # 注册数据：日频数据
     reg_kdata('day', 1)
@@ -112,7 +112,7 @@ def init(context):
     context.FactorCode = FactorCode  #
 
     # 超参数设置：
-    context.Len = 21*2    # 时间长度: 当交易日个数小于该事件长度时，跳过该交易日，假设平均每个月 21 个交易日左右  250/12
+    context.Len = 21   # 时间长度: 当交易日个数小于该事件长度时，跳过该交易日，假设平均每个月 21 个交易日左右  250/12
     context.Num = 0   # 记录当前交易日个数
 
     # lstm
@@ -350,8 +350,8 @@ if __name__ == '__main__':
     file_path = 'lstm.py'
     block = 'hs300'
 
-    begin_date = '2016-01-01'
-    end_date = '2018-09-30'
+    begin_date = '2017-01-01'
+    end_date = '2020-01-10'
 
     strategy_name = 'lstm'
 
