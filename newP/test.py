@@ -1,3 +1,5 @@
+import time
+
 import pandas as pd
 import numpy as np
 from atrader import *
@@ -7,7 +9,7 @@ stock_data_30 = pd.read_csv(r"C:\Users\李敏建\Downloads\6cdbab70-1b7d-42a8-b3
 stock_id = stock_data_30["code"].drop_duplicates().values.tolist()
 
 print(len(stock_id))
-total_money = 1000000
+total_money = 1000555
 
 
 def init(context):
@@ -47,34 +49,19 @@ def on_data(context):
 
     target_dic = dict(sorted(benefit_dic.items(), key=lambda item: item[1], reverse=True))
     target_code = list(target_dic.keys())[:10]
-
+    order_close_all(account_idx=0)
+    print("target_code=", target_code)
     position = context.account().position()  # 多头持仓数量
     if position is not None:
         position_codes = position["target_idx"]
-        print("target_code=", target_code)
         print("position_codes=", position_codes.tolist())
-
-        # 平仓操作
-        for position_code in position_codes:
-            if position_code not in target_code:  # 平仓
-                order_value(account_idx=0, target_idx=position_code, value=int(total_money / 10), side=2,
-                            position_effect=2,
-                            order_type=2, price=0)
-        position2 = context.account().position()
-        position_codes = position2["target_idx"]
-        print("position_code222222s=", position_codes.tolist())
-        # 建仓操作
-        for i in target_code:
-            if i not in position_codes.tolist():
-                order_value(account_idx=0, target_idx=i, value=total_money / 10, side=1, position_effect=1,
-                            order_type=2,
-                            price=0)
     else:
-        for i in target_code:
-            order_value(account_idx=0, target_idx=i, value=total_money / 10, side=1, position_effect=1,
-                        order_type=2,
-                        price=0)
-
+        print("none")
+    # 建仓操作
+    for i in target_code:
+        order_percent(account_idx=0, target_idx=i, percent=0.1, side=1, position_effect=1,
+                      order_type=2,
+                      price=0)
 
 
 if __name__ == '__main__':
