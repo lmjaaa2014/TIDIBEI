@@ -20,7 +20,7 @@ def init(context):
     reg_kdata('day', 1)
     context.Len = 5  # 时间长度: 当交易日个数小于该事件长度时，跳过该交易日，假设每周五个交易日
     context.Num = 0  # 记录当前交易日个数
-    # 确保月初调仓
+    # 确保周初调仓
     days = get_trading_days('SSE', '2011-01-01', '2020-11-01')
     is_monday = np.vectorize(lambda x: x.strftime("%w"))(days)
     is_monday = [is_monday == "1"]
@@ -51,12 +51,6 @@ def on_data(context):
     target_code = list(target_dic.keys())[:10]
     order_close_all(account_idx=0)
     print("target_code=", target_code)
-    position = context.account().position()  # 多头持仓数量
-    if position is not None:
-        position_codes = position["target_idx"]
-        print("position_codes=", position_codes.tolist())
-    else:
-        print("none")
     # 建仓操作
     for i in target_code:
         order_percent(account_idx=0, target_idx=i, percent=0.1, side=1, position_effect=1,

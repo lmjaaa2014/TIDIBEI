@@ -66,12 +66,12 @@ def init(context):
     context.FactorCode = FactorCode  #
 
     # 超参数设置：
-    context.Len = 21    # 时间长度: 当交易日个数小于该事件长度时，跳过该交易日，假设平均每个月 21 个交易日左右  250/12
-    context.Num = 0   # 记录当前交易日个数
+    context.Len = 21  # 时间长度: 当交易日个数小于该事件长度时，跳过该交易日，假设平均每个月 21 个交易日左右  250/12
+    context.Num = 0  # 记录当前交易日个数
 
     # 较敏感的超参数，需要调节
     context.upper_pos = 85  # 股票预测收益率的上分位数，高于则买入
-    context.down_pos = 20   # 股票预测收益率的下分位数，低于则卖出
+    context.down_pos = 20  # 股票预测收益率的下分位数，低于则卖出
     context.cash_rate = 0.6  # 计算可用资金比例的分子，利益大于0的股票越多，比例越小
 
     # 确保月初调仓
@@ -99,7 +99,7 @@ def on_data(context):
     # 数据存储变量：
     # Close 字段为标签，Fcode 为标签
     FactorData = pd.DataFrame(columns=(['idx', 'benefit'] + Fcode))  # 存储训练特征及标签样本
-    FactorDataTest = pd.DataFrame(columns=(['idx'] + Fcode))       # 存储预测特征样本
+    FactorDataTest = pd.DataFrame(columns=(['idx'] + Fcode))  # 存储预测特征样本
 
     # K线数据序号对齐
     tempIdx = KData[KData['time'] == KData['time'][0]]['target_idx'].reset_index(drop=True)
@@ -109,7 +109,7 @@ def on_data(context):
         # 训练特征集及训练标签构建：
         # 临时数据存储变量:
         FactorData0 = pd.DataFrame(np.full([1, len(Fcode) + 2], np.nan),
-            columns=(['idx', 'benefit'] + Fcode))
+                                   columns=(['idx', 'benefit'] + Fcode))
         # 存储预测特征样本
         FactorDataTest0 = pd.DataFrame(np.full([1, len(Fcode) + 1], np.nan), columns=(['idx'] + Fcode))
 
@@ -180,7 +180,7 @@ def on_data(context):
     Y = (np.array(FactorData['benefit']).astype(float) > 0)
 
     mlp = MLPRegressor(hidden_layer_sizes=4, activation='logistic', solver='adam',
-                        max_iter=50)
+                       max_iter=50)
 
     # 模型训练：
     mlp.fit(X, Y)
@@ -195,13 +195,13 @@ def on_data(context):
     P = context.cash_rate / (sum(y > 0) + 1)  # 设置每只标的可用资金比例 + 1 防止分母为0
 
     # 获取收益率的高分位数和低分位数
-    low_return,high_return = np.percentile(y, [context.down_pos, context.upper_pos])
+    low_return, high_return = np.percentile(y, [context.down_pos, context.upper_pos])
 
     for i in range(len(Idx)):
         position = positions.iloc[Idx[i]]
         # if position == 0 and y[i] == True and valid_cash > 0:  # 若预测结果为true(收益率>0)，买入
-            # print('开仓')
-        if position == 0 and y[i] > high_return and valid_cash > 0: # 当前无仓，且该股票收益大于高70%分位数，则开仓，买入
+        # print('开仓')
+        if position == 0 and y[i] > high_return and valid_cash > 0:  # 当前无仓，且该股票收益大于高70%分位数，则开仓，买入
             # 开仓数量 + 1防止分母为0
             # print(valid_cash, P, KData['close'][Idx[i]])  # 这里的数目可考虑减少一点，，有时太多有时太少
             Num = int(math.floor(valid_cash * P / 100 / (KData['close'][Idx[i]] + 1)) * 100)
@@ -216,8 +216,9 @@ def on_data(context):
                 continue
 
             print("开仓数量为：{}".format(Num))
-            order_id = order_volume(account_idx=0, target_idx=int(Idx[i]), volume=Num, side=1, position_effect=1, order_type=2,
-                         price=0)  # 指定委托量开仓
+            order_id = order_volume(account_idx=0, target_idx=int(Idx[i]), volume=Num, side=1, position_effect=1,
+                                    order_type=2,
+                                    price=0)  # 指定委托量开仓
             # 对订单号为order_id的委托单设置止损，止损距离10个整数点，触发时，委托的方式用市价委托
             # stop_loss_by_order(target_order_id=order_id, stop_type=1, stop_gap=10, order_type=2)
         # elif position > 0 and y[i] == False: #预测结果为false(收益率<0)，卖出
@@ -228,7 +229,6 @@ def on_data(context):
 
 
 if __name__ == '__main__':
-
     file_path = 'MLP.py'
     block = 'hs300'
 
